@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+__all__ = ['interpolate']
+
 def get_pixel_value(img, x, y):
 	"""
 	Utility function to get pixel value for coordinate
@@ -166,14 +168,20 @@ def bilinear_sampler(img, x, y):
 	return out
 
 def interpolate(img, new_h, new_w):
-  pass
+  N = img.get_shape().as_list()[0]
+  theta = tf.ones([N, 2, 3], dtype='float32')
+  grid = affine_grid_generator(new_h, new_w, theta)
+  x = tf.squeeze(grid[:, 0:1, :, :], axis=1)
+  y = tf.squeeze(grid[:, 1:2, :, :], axis=1)
+  out = bilinear_sampler(img, x, y)
+  return out
 
 if __name__ == '__main__':
   img = tf.random_uniform([10, 4, 4, 3])
   theta = tf.ones([10, 2, 3])
   grid = affine_grid_generator(10, 10, theta)
-  x = tf.squeeze(grid[:, 0:1, :, :])
-  y = tf.squeeze(grid[:, 1:2, :, :])
+  x = tf.squeeze(grid[:, 0:1, :, :], axis=1)
+  y = tf.squeeze(grid[:, 1:2, :, :], axis=1)
   out = bilinear_sampler(img, x, y)
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
